@@ -12,28 +12,29 @@ IF NOT DEFINED GENERATOR (
   ECHO Can not find VC2008 or VC2010 or VC2012 or VC2013 installed!
   GOTO ERROR
 )
-SET cwdir=%CD%
+PUSHD "%~dp0"
 SET rootdir=%~dp0
+SET rootdir=%rootdir:~0,-1%
+SET tmpdir=%~d0\tmp_libsundaowen_zlib
 SET target=windows_x86_64
-SET prefix=%rootdir%%target%
-SET /P version=<"%rootdir%version.txt"
-RD /S /Q "%rootdir%%version%"
-MD "%rootdir%%version%"
-XCOPY "%rootdir%..\%version%" "%rootdir%%version%" /S /Y
-RD /S /Q "%rootdir%build"
-MD "%rootdir%build"
-CD /D "%rootdir%build"
-cmake -C "%rootdir%CMakeLists-MSVC.txt" -DCMAKE_INSTALL_PREFIX="%prefix%" -G %GENERATOR% "%rootdir%%version%"
-cmake "%rootdir%%version%"
+SET prefix=%tmpdir%\%target%
+SET /P version=<version.txt
+RD /S /Q "%tmpdir%\%version%"
+MD "%tmpdir%\%version%"
+XCOPY "..\%version%" "%tmpdir%\%version%" /S /Y
+PUSHD "%tmpdir%\%version%"
+RD /S /Q build
+MD build
+CD build
+cmake -C "%rootdir%\CMakeLists-MSVC.txt" -DCMAKE_INSTALL_PREFIX="%prefix%" -G %GENERATOR% ..
 cmake --build . --target install --config Release --clean-first
-MD "%rootdir%..\target\include\%target%"
-XCOPY "%prefix%\include" "%rootdir%..\target\include\%target%" /S /Y
-MD "%rootdir%..\target\lib\%target%%target_lib_suffix%"
-COPY /Y "%prefix%\lib\zlibstatic.lib" "%rootdir%..\target\lib\%target%%target_lib_suffix%"
-CD /D "%cwdir%"
-RD /S /Q "%rootdir%%version%"
-RD /S /Q "%rootdir%build"
-RD /S /Q "%prefix%"
+POPD
+MD "..\target\include\%target%"
+XCOPY "%prefix%\include" "..\target\include\%target%" /S /Y
+MD "..\target\lib\%target%%target_lib_suffix%"
+COPY /Y "%prefix%\lib\*static*.lib" "..\target\lib\%target%%target_lib_suffix%"
+POPD
+RD /S /Q "%tmpdir%"
 GOTO :EOF
 
 :ERROR

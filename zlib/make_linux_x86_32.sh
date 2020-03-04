@@ -1,25 +1,24 @@
 #!/bin/bash
 
-cwdir=`pwd`
-rootdir=`dirname "$0"`
-cd "$rootdir"
+pushd "`dirname "$0"`"
 rootdir=`pwd`
+tmpdir=/tmp/libsundaowen_zlib
 target=linux_x86_32
-prefix=$rootdir/$target
-version=`cat "$rootdir/version.txt"`
-rm -rf "$rootdir/$version"
-mkdir -p "$rootdir/$version"
-cp -rf "$rootdir/../$version/"* "$rootdir/$version"
-rm -rf "$rootdir/build"
-mkdir -p "$rootdir/build"
-cd "$rootdir/build"
-cmake -DBUILD64=OFF -C "$rootdir/CMakeLists.txt" -DCMAKE_INSTALL_PREFIX="$prefix" "$rootdir/$version"
+prefix=$tmpdir/$target
+version=`cat version.txt`
+rm -rf "$tmpdir/$version"
+mkdir -p "$tmpdir/$version"
+cp -rf "../$version/"* "$tmpdir/$version"
+pushd "$tmpdir/$version"
+rm -rf build
+mkdir build
+cd build
+cmake -DBUILD64=OFF -C "$rootdir/CMakeLists.txt" -DCMAKE_INSTALL_PREFIX="$prefix" ..
 cmake --build . --target install --config Release --clean-first
-mkdir -p "$rootdir/../target/include/$target"
-cp -rf "$prefix/include/"* "$rootdir/../target/include/$target"
-mkdir -p "$rootdir/../target/lib/$target"
-cp -f "$prefix/lib/libz.a" "$rootdir/../target/lib/$target"
-cd "$cwdir"
-rm -rf "$rootdir/$version"
-rm -rf "$rootdir/build"
-rm -rf "$prefix"
+popd
+mkdir -p "../target/include/$target"
+cp -rf "$prefix/include/"* "../target/include/$target"
+mkdir -p "../target/lib/$target"
+cp -f "$prefix/lib/"*.a "../target/lib/$target"
+popd
+rm -rf "$tmpdir"
